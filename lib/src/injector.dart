@@ -1,4 +1,3 @@
-
 import 'package:flutter_simple_dependency_injection/src/injector_exception.dart';
 import 'package:flutter_simple_dependency_injection/src/type_factory.dart';
 
@@ -15,20 +14,20 @@ typedef T ObjectFactoryFn<T>(Injector injector);
 ///   injector.map(Logger, (i) => new Logger(), isSingleton: true);
 ///   injector.map(String, (i) => "https://api.com/", key: "apiUrl");
 ///   injector.map(SomeService, (i) => new SomeService(i.get(Logger), i.get(String, "apiUrl")));
-/// 
+///
 ///   injector.get<SomeService>(SomeService).doSomething();
 /// }
-/// 
+///
 /// class Logger {
-///   void log(String message) => print(message); 
+///   void log(String message) => print(message);
 /// }
-/// 
+///
 /// class SomeService {
 ///   final Logger _logger;
 ///   final String _apiUrl;
-/// 
+///
 ///   SomeService(this._logger, this._apiUrl);
-/// 
+///
 ///   void doSomething() {
 ///    _logger.log("Doing something with the api at '$_apiUrl'");
 ///   }
@@ -40,16 +39,16 @@ class Injector {
       new Map<String, TypeFactory<Object>>();
 
   /// The name of this injector.
-  /// 
+  ///
   /// Naming injectors enable each app to have multiple atomic injectors.
   final String name;
 
   /// Get the instance of the named injector creating an new [Injector] instance
   /// if the named injector cannot be found.
-  /// 
+  ///
   /// The [name] is optional and if omitted the "default" injector instance
   /// will be returned.
-  /// 
+  ///
   /// ```dart
   /// final defaultInjector = Injector.getInjector();
   /// final isolatedInjector = Injector.getInjector("Isolated");
@@ -68,20 +67,20 @@ class Injector {
       "${type.toString()}::${key == null ? "default" : key}";
 
   /// Maps the given type to the given factory function. Optionally specify the type as a singleton and give it a named key.
-  /// 
+  ///
   /// [type] The type the [factoryFn] will return an instance of.
-  /// 
+  ///
   /// [factoryFn] is a simple function which takes in an [Injector] and returns an new instance
   /// of the type [T].  In this method you can use the injector to get other dependencies
   /// this instance depends on (see examples below).
-  /// 
+  ///
   /// When [isSingleton] is true the first returned instances of the object is stored and
   /// subsequently return in future calls.
-  /// 
+  ///
   /// When [key] is provided the object is keyed by type name and the given key.
-  /// 
+  ///
   /// Throws an [InjectorException] if the type and or key combination has already been mapped.
-  /// 
+  ///
   /// ```dart
   /// final injector = Injector.getInstance();
   /// injector.map(Logger, (injector) => new AppLogger());
@@ -100,7 +99,7 @@ class Injector {
   }
 
   /// Gets an instance of the given type and optional given key.
-  /// 
+  ///
   /// Throws an [InjectorException] if the given type has not been mapped
   /// using the map method.
   ///

@@ -4,7 +4,8 @@ void main() {
   final injector = Injector.getInjector();
   injector.map(Logger, (i) => new Logger(), isSingleton: true);
   injector.map(String, (i) => "https://api.com/", key: "apiUrl");
-  injector.map(SomeService, (i) => new SomeService(i.get(Logger), i.get(String, "apiUrl")));
+  injector.map(SomeService,
+      (i) => new SomeService(i.get(Logger), i.get(String, "apiUrl")));
 
   injector.get<SomeService>(SomeService).doSomething();
   // passing in the [SomeService] as a generic parameter strongly types the return object.
@@ -12,7 +13,7 @@ void main() {
 }
 
 class Logger {
-  void log(String message) => print(message); 
+  void log(String message) => print(message);
 }
 
 class SomeService {

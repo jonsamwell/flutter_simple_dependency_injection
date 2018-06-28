@@ -1,4 +1,3 @@
-
 import 'package:flutter_simple_dependency_injection/src/injector.dart';
 
 class TypeFactory<T> {
