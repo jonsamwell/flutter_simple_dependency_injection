@@ -50,6 +50,8 @@ void main() {
   injector.map(String, (i) => "https://api.com/", key: "apiUrl");
   injector.map(SomeService, (i) => new SomeService(i.get(Logger), i.get(String, "apiUrl")));
 
+  injector.get(SomeService).doSomething();
+  // passing in the [SomeService] as a generic parameter strongly types the return object.
   injector.get<SomeService>(SomeService).doSomething();
 }
 

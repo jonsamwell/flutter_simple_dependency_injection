@@ -7,6 +7,8 @@ void main() {
   injector.map(SomeService, (i) => new SomeService(i.get(Logger), i.get(String, "apiUrl")));
 
   injector.get<SomeService>(SomeService).doSomething();
+  // passing in the [SomeService] as a generic parameter strongly types the return object.
+  injector.get<SomeService>(SomeService).doSomething();
 }
 
 class Logger {
