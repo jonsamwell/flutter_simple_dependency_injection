@@ -11,11 +11,11 @@ typedef T ObjectFactoryFn<T>(Injector injector);
 ///
 /// void main() {
 ///   final injector = Injector.getInjector();
-///   injector.map(Logger, (i) => new Logger(), isSingleton: true);
-///   injector.map(String, (i) => "https://api.com/", key: "apiUrl");
-///   injector.map(SomeService, (i) => new SomeService(i.get(Logger), i.get(String, "apiUrl")));
+///   injector.map<Logger>((i) => new Logger(), isSingleton: true);
+///   injector.map<String>((i) => "https://api.com/", key: "apiUrl");
+///   injector.map<SomeService>((i) => new SomeService(i.get(Logger), i.get(String, "apiUrl")));
 ///
-///   injector.get<SomeService>(SomeService).doSomething();
+///   injector.get<SomeService>().doSomething();
 /// }
 ///
 /// class Logger {
@@ -68,7 +68,7 @@ class Injector {
 
   /// Maps the given type to the given factory function. Optionally specify the type as a singleton and give it a named key.
   ///
-  /// [type] The type the [factoryFn] will return an instance of.
+  /// [T] The type the [factoryFn] will return an instance of.
   ///
   /// [factoryFn] is a simple function which takes in an [Injector] and returns an new instance
   /// of the type [T].  In this method you can use the injector to get other dependencies
@@ -88,9 +88,9 @@ class Injector {
   /// injector.map(AppLogger, (injector) => new AppLogger(injector.get(Logger)), key: "AppLogger");
   /// injector.map(String, (injector) => "https://api.com/", key: "ApiUrl");
   /// ```
-  void map<T>(T type, ObjectFactoryFn<T> factoryFn,
+  void map<T>(ObjectFactoryFn<T> factoryFn,
       {bool isSingleton = false, String key}) {
-    final objectKey = _makeKey(type, key);
+    final objectKey = _makeKey(T, key);
     if (_factories.containsKey(objectKey)) {
       throw new InjectorException(
           "Mapping already present for type '$objectKey'");
@@ -98,7 +98,7 @@ class Injector {
     _factories[objectKey] = new TypeFactory<T>(factoryFn, isSingleton);
   }
 
-  /// Gets an instance of the given type and optional given key.
+  /// Gets an instance of the given type of [T] and optional given key.
   ///
   /// Throws an [InjectorException] if the given type has not been mapped
   /// using the map method.
@@ -107,14 +107,12 @@ class Injector {
   /// ```dart
   /// final injector = Injector.getInstance();
   /// // map the type
-  /// injector.map(Logger, (injector) => new AppLogger());
+  /// injector.map<Logger>((injector) => new AppLogger());
   /// // get the type
-  /// injector.get(Logger).log("some message");
-  /// // adding a T generic will strongly cast the type
-  /// injector.get<Logger>(Logger).log("some new message");
+  /// injector.get<Logger>().log("some message");
   /// ```
-  T get<T>(Type type, [String key]) {
-    final objectKey = _makeKey(type, key);
+  T get<T>([String key]) {
+    final objectKey = _makeKey(T, key);
     final objectFactory = _factories[objectKey];
     if (objectFactory == null) {
       throw new InjectorException(
