@@ -20,6 +20,12 @@ class ObjectWithTwoDependencies {
   ObjectWithTwoDependencies(this.dependencyOne, this.dependencyTwo);
 }
 
+class ObjectWithGenerics<T> {
+  T propertyOfType;
+
+  ObjectWithGenerics(this.propertyOfType);
+}
+
 void main() {
   test("can get default injector instance", () async {
     final injector = Injector.getInjector();
@@ -46,6 +52,23 @@ void main() {
             e is InjectorException &&
             e.message ==
                 "Cannot find object factory for 'ObjectWithNoDependencies::default'")));
+  });
+
+  test("can map generic types", () async {
+    final injector = Injector.getInjector();
+    injector.map<ObjectWithGenerics<String>>((injector) => new ObjectWithGenerics("Hello"));
+    injector.map<ObjectWithGenerics<int>>((injector) => new ObjectWithGenerics(10));
+    injector.map<ObjectWithGenerics<bool>>((injector) => new ObjectWithGenerics(true));
+    final stringInstance = injector.get<ObjectWithGenerics<String>>();
+    final intInstance = injector.get<ObjectWithGenerics<int>>();
+    final boolInstance = injector.get<ObjectWithGenerics<bool>>();
+    expect(stringInstance is ObjectWithGenerics, true);
+    expect(intInstance is ObjectWithGenerics, true);
+    expect(boolInstance is ObjectWithGenerics, true);
+    expect(stringInstance.propertyOfType, "Hello");
+    expect(intInstance.propertyOfType, 10);
+    expect(boolInstance.propertyOfType, true);
+    injector.dispose();
   });
 
   test("can map class factory and get object instance", () async {
