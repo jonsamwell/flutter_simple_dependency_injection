@@ -46,13 +46,15 @@ import 'package:flutter_simple_dependency_injection/injector.dart';
 
 void main() {
   final injector = Injector.getInjector();
-  injector.map(Logger, (i) => new Logger(), isSingleton: true);
-  injector.map(String, (i) => "https://api.com/", key: "apiUrl");
-  injector.map(SomeService, (i) => new SomeService(i.get(Logger), i.get(String, "apiUrl")));
+  injector.map<Logger>((i) => new Logger(), isSingleton: true);
+  injector.map<String>((i) => "https://api.com/", key: "apiUrl");
+  injector.map<SomeService>((i) => new SomeService(i.get<Logger>(), i.get<String>("apiUrl")));
+  injector.map<SomeGenericType<String>>((i) => new SomeGenericType("Hello"));
+  injector.map<SomeGenericType<int>>((i) => new SomeGenericType(42));
 
-  injector.get(SomeService).doSomething();
-  // passing in the [SomeService] as a generic parameter strongly types the return object.
-  injector.get<SomeService>(SomeService).doSomething();
+  injector.get<SomeService>().doSomething();
+  print(injector.get<SomeGenericType<String>>().propertyOfT) // prints "Hello";
+  print(injector.get<SomeGenericType<int>>().propertyOfT) // prints 42;
 }
 
 class Logger {
@@ -68,6 +70,11 @@ class SomeService {
   void doSomething() {
     _logger.log("Doing something with the api at '$_apiUrl'");
   }
+}
+
+class SomeGenericType<T> {
+  T propertyOfT;
+  SomeService(this.propertyOfT);
 }
 
 ```
