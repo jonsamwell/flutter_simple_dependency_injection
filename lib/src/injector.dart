@@ -2,6 +2,7 @@ import 'package:flutter_simple_dependency_injection/src/injector_exception.dart'
 import 'package:flutter_simple_dependency_injection/src/type_factory.dart';
 
 typedef T ObjectFactoryFn<T>(Injector injector);
+typedef T ObjectFactoryWithParamsFn<T>(Injector injector, Map<String, dynamic> additionalParameters);
 
 /// A simple injector implementation for use in Flutter projects where conventional relfection (mirrors)
 /// is not available.
@@ -95,13 +96,44 @@ class Injector {
       throw new InjectorException(
           "Mapping already present for type '$objectKey'");
     }
-    _factories[objectKey] = new TypeFactory<T>(factoryFn, isSingleton);
+    _factories[objectKey] = new TypeFactory<T>((i, p) => factoryFn(i), isSingleton);
   }
 
-  /// Gets an instance of the given type of [T] and optional given key.
+  /// Maps the given type to the given factory function. Optionally give it a named key.
+  ///
+  /// [T] The type the [factoryFn] will return an instance of.
+  ///
+  /// [factoryFn] is a simple function which takes in an [Injector] and returns an new instance
+  /// of the type [T].  In this method you can use the injector to get other dependencies
+  /// this instance depends on (see examples below).
+  ///
+  /// When [isSingleton] is true the first returned instances of the object is stored and
+  /// subsequently return in future calls.
+  ///
+  /// When [key] is provided the object is keyed by type name and the given key.
+  ///
+  /// Throws an [InjectorException] if the type and or key combination has already been mapped.
+  ///
+  /// ```dart
+  /// final injector = Injector.getInstance();
+  /// injector.map(Logger, (injector, params) => new AppLogger(params["logKey"]));
+  /// injector.map(AppLogger, (injector, params) => new AppLogger(injector.get(Logger, params["apiUrl"])), key: "AppLogger");
+  /// ```
+  void mapWithParams<T>(ObjectFactoryWithParamsFn<T> factoryFn, {String key}) {
+    final objectKey = _makeKey(T, key);
+    if (_factories.containsKey(objectKey)) {
+      throw new InjectorException(
+          "Mapping already present for type '$objectKey'");
+    }
+    _factories[objectKey] = new TypeFactory<T>(factoryFn, false);
+  }
+
+  /// Gets an instance of the given type of [T] and optional given key and parameters.
   ///
   /// Throws an [InjectorException] if the given type has not been mapped
   /// using the map method.
+  /// 
+  /// Note that instance that are mapped to need additional parameters cannot be singletons
   ///
   ///
   /// ```dart
@@ -110,8 +142,12 @@ class Injector {
   /// injector.map<Logger>((injector) => new AppLogger());
   /// // get the type
   /// injector.get<Logger>().log("some message");
+  /// 
+  /// injector.mapWithParams<SomeType>((i, p) => new SomeType(p["id"]))
+  /// final instance = injector.get<SomeType>(additionalParameters: { "id": "some-id" });
+  /// print(istance.id) // prints 'some-id'
   /// ```
-  T get<T>([String key]) {
+  T get<T>({String key, Map<String, dynamic> additionalParameters}) {
     final objectKey = _makeKey(T, key);
     final objectFactory = _factories[objectKey];
     if (objectFactory == null) {
@@ -119,7 +155,19 @@ class Injector {
           "Cannot find object factory for '$objectKey'");
     }
 
-    return objectFactory.get(this);
+    return objectFactory.get(this, additionalParameters);
+  }
+  /// Gets all the mapped instances of the given type and additional parameters
+  Iterable<T> getAll<T>({Map<String, dynamic> additionalParameters}) {
+    final keyForType = _makeKey(T).replaceFirst("default", "");
+    final instances = new List<T>();
+    _factories.forEach((k, f) {
+      if (k.contains(keyForType)) {
+        instances.add(f.get(this, additionalParameters));
+      }
+    });
+
+    return instances;
   }
 
   /// Disposes of the injector instance and removes it from the named collection of injectors

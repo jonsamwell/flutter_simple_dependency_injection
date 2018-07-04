@@ -1,3 +1,24 @@
+## [0.0.4] - 05/07/2018.
+* Added ability to pass in additional arguments in the factory function with a new method call [mapWithParams].
+
+```dart
+    final injector = Injector.getInstance();
+    injector.mapWithParams<SomeType>((i, p) => new SomeType(p["id"]))
+    final instance = injector.get<SomeType>(additionalParameters: { "id": "some-id" });
+    print(istance.id) // prints 'some-id'
+```
+
+* Added ability to get all objects of the same mapped type
+
+```dart
+    final injector = Injector.getInstance();
+    injector.map<SomeType>((injector) => new SomeType("0"));
+    injector.map<SomeType>((injector) => new SomeType("1"), key: "One");
+    injector.map<SomeType>((injector) => new SomeType("2"), key: "Two");
+    final instances = injector.getAll<SomeType>();
+    print(instances.length); // prints '3'
+```
+
 ## [0.0.3] - 01/07/2018.
 
 * Improved injector interface using generic types instead of a passed in a type to key an object factory

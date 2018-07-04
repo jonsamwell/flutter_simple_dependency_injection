@@ -26,6 +26,12 @@ class ObjectWithGenerics<T> {
   ObjectWithGenerics(this.propertyOfType);
 }
 
+class ObjectWithSomeConstructorArgDependencies {
+  final String id;
+
+  ObjectWithSomeConstructorArgDependencies(this.id);
+}
+
 void main() {
   test("can get default injector instance", () async {
     final injector = Injector.getInjector();
@@ -113,7 +119,7 @@ void main() {
     injector.map<ObjectWithNoDependencies>((injector) => new ObjectWithNoDependencies());
     injector.map<ObjectWithNoDependencies>((injector) => new ObjectWithNoDependencies(), key: "One");
     final instanceOne = injector.get<ObjectWithNoDependencies>();
-    final instanceTwo = injector.get<ObjectWithNoDependencies>("One");
+    final instanceTwo = injector.get<ObjectWithNoDependencies>(key: "One");
     expect(instanceOne is ObjectWithNoDependencies, true);
     expect(instanceTwo is ObjectWithNoDependencies, true);
     expect(instanceOne != instanceTwo, true);
@@ -123,11 +129,34 @@ void main() {
   test("can map simple named string type", () async {
     final injector = Injector.getInjector();
     injector.map<String>((injector) => "Jon", key: "MyName");
-    final instanceOne = injector.get<String>("MyName");
-    final instanceTwo = injector.get<String>("MyName");
+    final instanceOne = injector.get<String>(key: "MyName");
+    final instanceTwo = injector.get<String>(key: "MyName");
     expect(instanceOne is String, true);
     expect(instanceOne, "Jon");
     expect(instanceTwo, instanceOne);
+    injector.dispose();
+  });
+
+  test("can construct type with additional give parameters", () async {
+    final injector = Injector.getInjector();
+    injector.mapWithParams<ObjectWithSomeConstructorArgDependencies>((injector, p) => new ObjectWithSomeConstructorArgDependencies(p["id"]));
+    final instanceOne = injector.get<ObjectWithSomeConstructorArgDependencies>(additionalParameters: { "id": "some-id" });
+    expect(instanceOne is ObjectWithSomeConstructorArgDependencies, true);
+    expect(instanceOne.id, "some-id");
+    injector.dispose();
+  });
+
+  test("can get all instances of type", () async {
+    final injector = Injector.getInjector();
+    injector.map<ObjectWithSomeConstructorArgDependencies>((injector) => new ObjectWithSomeConstructorArgDependencies("0"));
+    injector.map<ObjectWithNoDependencies>((injector) => new ObjectWithNoDependencies());
+    injector.map<ObjectWithSomeConstructorArgDependencies>((injector) => new ObjectWithSomeConstructorArgDependencies("1"), key: "One");
+    injector.map<ObjectWithSomeConstructorArgDependencies>((injector) => new ObjectWithSomeConstructorArgDependencies("2"), key: "Two");
+    final instances = injector.getAll<ObjectWithSomeConstructorArgDependencies>();
+    expect(instances.length, 3);
+    expect(instances.elementAt(0).id, "0");
+    expect(instances.elementAt(1).id, "1");
+    expect(instances.elementAt(2).id, "2");
     injector.dispose();
   });
 
@@ -149,7 +178,7 @@ void main() {
     final injector = Injector.getInjector();
     injector.map<ObjectWithOneDependency>(
         (injector) => new ObjectWithOneDependency(
-            injector.get<ObjectWithNoDependencies>("Key")));
+            injector.get<ObjectWithNoDependencies>(key: "Key")));
     expect(
         () => injector.get<ObjectWithOneDependency>(),
         throwsA(predicate((e) =>

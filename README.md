@@ -55,6 +55,18 @@ void main() {
   injector.get<SomeService>().doSomething();
   print(injector.get<SomeGenericType<String>>().propertyOfT) // prints "Hello";
   print(injector.get<SomeGenericType<int>>().propertyOfT) // prints 42;
+
+  // get an instace of each of the same mapped types
+  injector.map<SomeType>((injector) => new SomeType("0"));
+  injector.map<SomeType>((injector) => new SomeType("1"), key: "One");
+  injector.map<SomeType>((injector) => new SomeType("2"), key: "Two");
+  final instances = injector.getAll<SomeType>();
+  print(instances.length); // prints '3'
+
+  // passing in additional arguments when getting an instance
+  injector.mapWithParams<SomeType>((i, p) => new SomeType(p["id"]));
+  final instance = injector.get<SomeType>(additionalParameters: { "id": "some-id" });
+  print(instance.id); // prints 'some-id'
 }
 
 class Logger {
@@ -75,6 +87,11 @@ class SomeService {
 class SomeGenericType<T> {
   T propertyOfT;
   SomeService(this.propertyOfT);
+}
+
+class SomeType {
+  final String id;
+  SomeType(this.id);
 }
 
 ```

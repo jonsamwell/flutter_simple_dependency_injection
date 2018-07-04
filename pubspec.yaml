@@ -1,6 +1,6 @@
 name: flutter_simple_dependency_injection
 description: A super simple dependency injection implementation for flutter that behaviours like any normal IOC container and does not rely on mirrors
-version: 0.0.3
+version: 0.0.4
 author: Jon Samwell <jonsamwell@gmail.com>
 homepage: https://github.com/jonsamwell/flutter_simple_dependency_injection
 
