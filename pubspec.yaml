@@ -5,15 +5,9 @@ author: Jon Samwell <jonsamwell@gmail.com>
 homepage: https://github.com/jonsamwell/flutter_simple_dependency_injection
 
 dependencies:
-  flutter:
-    sdk: flutter
 
 dev_dependencies:
   test:
-  flutter_test:
-    sdk: flutter
-
-flutter:
 
 environment:
   sdk: ">=2.0.0-dev.35 <3.0.0"
