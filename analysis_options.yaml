@@ -1,6 +1,12 @@
 # https://www.dartlang.org/guides/language/analysis-options
 analyzer:
-  strong-mode: true
+  errors:
+    # treat missing required parameters as a warning (not a hint)
+    missing_required_param: warning
+    # treat missing returns as a warning (not a hint)
+    missing_return: warning
+    # allow having TODOs in the code
+    todo: ignore
 
 # Source of linter options:
 # http://dart-lang.github.io/linter/lints/options/options.html

@@ -1,3 +1,7 @@
+## [1.0.1] - 05/03/2019.
+* Removed dependency on flutter
+* Updated example to explain how to use dependency injection rather than service location
+
 ## [0.0.4] - 05/07/2018.
 * Added ability to pass in additional arguments in the factory function with a new method call [mapWithParams].
 

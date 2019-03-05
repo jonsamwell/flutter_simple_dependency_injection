@@ -2,7 +2,8 @@ import 'package:flutter_simple_dependency_injection/src/injector_exception.dart'
 import 'package:flutter_simple_dependency_injection/src/type_factory.dart';
 
 typedef T ObjectFactoryFn<T>(Injector injector);
-typedef T ObjectFactoryWithParamsFn<T>(Injector injector, Map<String, dynamic> additionalParameters);
+typedef T ObjectFactoryWithParamsFn<T>(
+    Injector injector, Map<String, dynamic> additionalParameters);
 
 /// A simple injector implementation for use in Flutter projects where conventional relfection (mirrors)
 /// is not available.
@@ -96,7 +97,8 @@ class Injector {
       throw new InjectorException(
           "Mapping already present for type '$objectKey'");
     }
-    _factories[objectKey] = new TypeFactory<T>((i, p) => factoryFn(i), isSingleton);
+    _factories[objectKey] =
+        new TypeFactory<T>((i, p) => factoryFn(i), isSingleton);
   }
 
   /// Maps the given type to the given factory function. Optionally give it a named key.
@@ -132,7 +134,7 @@ class Injector {
   ///
   /// Throws an [InjectorException] if the given type has not been mapped
   /// using the map method.
-  /// 
+  ///
   /// Note that instance that are mapped to need additional parameters cannot be singletons
   ///
   ///
@@ -142,7 +144,7 @@ class Injector {
   /// injector.map<Logger>((injector) => new AppLogger());
   /// // get the type
   /// injector.get<Logger>().log("some message");
-  /// 
+  ///
   /// injector.mapWithParams<SomeType>((i, p) => new SomeType(p["id"]))
   /// final instance = injector.get<SomeType>(additionalParameters: { "id": "some-id" });
   /// print(istance.id) // prints 'some-id'
@@ -157,6 +159,7 @@ class Injector {
 
     return objectFactory.get(this, additionalParameters);
   }
+
   /// Gets all the mapped instances of the given type and additional parameters
   Iterable<T> getAll<T>({Map<String, dynamic> additionalParameters}) {
     final keyForType = _makeKey(T).replaceFirst("default", "");
