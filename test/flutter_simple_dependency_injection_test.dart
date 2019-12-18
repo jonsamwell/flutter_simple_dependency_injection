@@ -32,7 +32,26 @@ class ObjectWithSomeConstructorArgDependencies {
   ObjectWithSomeConstructorArgDependencies(this.id);
 }
 
+class ObjectC extends ObjectB {
+  final String idC;
+
+  ObjectC(this.idC, String idB) : super(idB);
+}
+
+class ObjectB {
+  final String idB;
+
+  ObjectB(this.idB);
+}
+
 void main() {
+  test("non-genric map test", () async {
+    final injector = Injector.getInjector();
+    injector.map((i) => ObjectC('C', 'B'));
+    final instance = injector.get<ObjectC>();
+    expect(instance != null, true);
+  });
+
   test("can get default injector instance", () async {
     final injector = Injector.getInjector();
     expect(injector != null, true);
@@ -50,7 +69,7 @@ void main() {
     final injectorOne = Injector.getInjector("one");
     final injectorTwo = Injector.getInjector("two");
     injectorOne
-        .map<ObjectWithNoDependencies>((i) => new ObjectWithNoDependencies());
+        .map<ObjectWithNoDependencies>((i) => ObjectWithNoDependencies());
     final instance = injectorOne.get<ObjectWithNoDependencies>();
     expect(instance is ObjectWithNoDependencies, true);
     expect(
@@ -64,11 +83,10 @@ void main() {
   test("can map generic types", () async {
     final injector = Injector.getInjector();
     injector.map<ObjectWithGenerics<String>>(
-        (injector) => new ObjectWithGenerics("Hello"));
+        (injector) => ObjectWithGenerics("Hello"));
+    injector.map<ObjectWithGenerics<int>>((injector) => ObjectWithGenerics(10));
     injector
-        .map<ObjectWithGenerics<int>>((injector) => new ObjectWithGenerics(10));
-    injector.map<ObjectWithGenerics<bool>>(
-        (injector) => new ObjectWithGenerics(true));
+        .map<ObjectWithGenerics<bool>>((injector) => ObjectWithGenerics(true));
     final stringInstance = injector.get<ObjectWithGenerics<String>>();
     final intInstance = injector.get<ObjectWithGenerics<int>>();
     final boolInstance = injector.get<ObjectWithGenerics<bool>>();
@@ -84,7 +102,7 @@ void main() {
   test("can map class factory and get object instance", () async {
     final injector = Injector.getInjector();
     injector.map<ObjectWithNoDependencies>(
-        (injector) => new ObjectWithNoDependencies());
+        (injector) => ObjectWithNoDependencies());
     final instance = injector.get<ObjectWithNoDependencies>();
     expect(instance is ObjectWithNoDependencies, true);
     expect(instance.propertyOne, "Hello");
@@ -96,7 +114,7 @@ void main() {
       () async {
     final injector = Injector.getInjector();
     injector.map<ObjectWithNoDependencies>(
-        (injector) => new ObjectWithNoDependencies(),
+        (injector) => ObjectWithNoDependencies(),
         isSingleton: true);
     final instanceOne = injector.get<ObjectWithNoDependencies>();
     final instanceTwo = injector.get<ObjectWithNoDependencies>();
@@ -110,9 +128,9 @@ void main() {
   test("can map class factory and get object simple instance", () async {
     final injector = Injector.getInjector();
     injector.map<ObjectWithNoDependencies>(
-        (injector) => new ObjectWithNoDependencies());
+        (injector) => ObjectWithNoDependencies());
     injector.map<ObjectWithOneDependency>((injector) =>
-        new ObjectWithOneDependency(injector.get<ObjectWithNoDependencies>()));
+        ObjectWithOneDependency(injector.get<ObjectWithNoDependencies>()));
     final instance = injector.get<ObjectWithOneDependency>();
     expect(instance is ObjectWithOneDependency, true);
     expect(instance.dependencyOne is ObjectWithNoDependencies, true);
@@ -123,9 +141,9 @@ void main() {
   test("can map same object with different keys and get instances", () async {
     final injector = Injector.getInjector();
     injector.map<ObjectWithNoDependencies>(
-        (injector) => new ObjectWithNoDependencies());
+        (injector) => ObjectWithNoDependencies());
     injector.map<ObjectWithNoDependencies>(
-        (injector) => new ObjectWithNoDependencies(),
+        (injector) => ObjectWithNoDependencies(),
         key: "One");
     final instanceOne = injector.get<ObjectWithNoDependencies>();
     final instanceTwo = injector.get<ObjectWithNoDependencies>(key: "One");
@@ -149,7 +167,7 @@ void main() {
   test("can construct type with additional give parameters", () async {
     final injector = Injector.getInjector();
     injector.mapWithParams<ObjectWithSomeConstructorArgDependencies>(
-        (injector, p) => new ObjectWithSomeConstructorArgDependencies(p["id"]));
+        (injector, p) => ObjectWithSomeConstructorArgDependencies(p["id"]));
     final instanceOne = injector.get<ObjectWithSomeConstructorArgDependencies>(
         additionalParameters: {"id": "some-id"});
     expect(instanceOne is ObjectWithSomeConstructorArgDependencies, true);
@@ -160,14 +178,14 @@ void main() {
   test("can get all instances of type", () async {
     final injector = Injector.getInjector();
     injector.map<ObjectWithSomeConstructorArgDependencies>(
-        (injector) => new ObjectWithSomeConstructorArgDependencies("0"));
+        (injector) => ObjectWithSomeConstructorArgDependencies("0"));
     injector.map<ObjectWithNoDependencies>(
-        (injector) => new ObjectWithNoDependencies());
+        (injector) => ObjectWithNoDependencies());
     injector.map<ObjectWithSomeConstructorArgDependencies>(
-        (injector) => new ObjectWithSomeConstructorArgDependencies("1"),
+        (injector) => ObjectWithSomeConstructorArgDependencies("1"),
         key: "One");
     injector.map<ObjectWithSomeConstructorArgDependencies>(
-        (injector) => new ObjectWithSomeConstructorArgDependencies("2"),
+        (injector) => ObjectWithSomeConstructorArgDependencies("2"),
         key: "Two");
     final instances =
         injector.getAll<ObjectWithSomeConstructorArgDependencies>();
@@ -181,7 +199,7 @@ void main() {
   test("exception thrown when type is not known", () async {
     final injector = Injector.getInjector();
     injector.map<ObjectWithOneDependency>((injector) =>
-        new ObjectWithOneDependency(injector.get<ObjectWithNoDependencies>()));
+        ObjectWithOneDependency(injector.get<ObjectWithNoDependencies>()));
     expect(
         () => injector.get<ObjectWithOneDependency>(),
         throwsA(predicate((e) =>
@@ -193,9 +211,8 @@ void main() {
 
   test("exception thrown when keyed type is not known", () async {
     final injector = Injector.getInjector();
-    injector.map<ObjectWithOneDependency>((injector) =>
-        new ObjectWithOneDependency(
-            injector.get<ObjectWithNoDependencies>(key: "Key")));
+    injector.map<ObjectWithOneDependency>((injector) => ObjectWithOneDependency(
+        injector.get<ObjectWithNoDependencies>(key: "Key")));
     expect(
         () => injector.get<ObjectWithOneDependency>(),
         throwsA(predicate((e) =>

@@ -13,9 +13,9 @@ typedef T ObjectFactoryWithParamsFn<T>(
 ///
 /// void main() {
 ///   final injector = Injector.getInjector();
-///   injector.map<Logger>((i) => new Logger(), isSingleton: true);
+///   injector.map<Logger>((i) => Logger(), isSingleton: true);
 ///   injector.map<String>((i) => "https://api.com/", key: "apiUrl");
-///   injector.map<SomeService>((i) => new SomeService(i.get(Logger), i.get(String, "apiUrl")));
+///   injector.map<SomeService>((i) => SomeService(i.get(Logger), i.get(String, "apiUrl")));
 ///
 ///   injector.get<SomeService>().doSomething();
 /// }
@@ -38,14 +38,14 @@ typedef T ObjectFactoryWithParamsFn<T>(
 class Injector {
   static final Map<String, Injector> _injectors = Map<String, Injector>();
   final Map<String, TypeFactory<Object>> _factories =
-      new Map<String, TypeFactory<Object>>();
+      Map<String, TypeFactory<Object>>();
 
   /// The name of this injector.
   ///
   /// Naming injectors enable each app to have multiple atomic injectors.
   final String name;
 
-  /// Get the instance of the named injector creating an new [Injector] instance
+  /// Get the instance of the named injector creating an [Injector] instance
   /// if the named injector cannot be found.
   ///
   /// The [name] is optional and if omitted the "default" injector instance
@@ -57,7 +57,7 @@ class Injector {
   /// ```
   static Injector getInjector([String name = "default"]) {
     if (!_injectors.containsKey(name)) {
-      _injectors[name] = new Injector._internal(name);
+      _injectors[name] = Injector._internal(name);
     }
 
     return _injectors[name];
@@ -85,20 +85,18 @@ class Injector {
   ///
   /// ```dart
   /// final injector = Injector.getInstance();
-  /// injector.map(Logger, (injector) => new AppLogger());
-  /// injector.map(DbLogger, (injector) => new DbLogger(), isSingleton: true);
-  /// injector.map(AppLogger, (injector) => new AppLogger(injector.get(Logger)), key: "AppLogger");
+  /// injector.map(Logger, (injector) => AppLogger());
+  /// injector.map(DbLogger, (injector) => DbLogger(), isSingleton: true);
+  /// injector.map(AppLogger, (injector) => AppLogger(injector.get(Logger)), key: "AppLogger");
   /// injector.map(String, (injector) => "https://api.com/", key: "ApiUrl");
   /// ```
   void map<T>(ObjectFactoryFn<T> factoryFn,
       {bool isSingleton = false, String key}) {
     final objectKey = _makeKey(T, key);
     if (_factories.containsKey(objectKey)) {
-      throw new InjectorException(
-          "Mapping already present for type '$objectKey'");
+      throw InjectorException("Mapping already present for type '$objectKey'");
     }
-    _factories[objectKey] =
-        new TypeFactory<T>((i, p) => factoryFn(i), isSingleton);
+    _factories[objectKey] = TypeFactory<T>((i, p) => factoryFn(i), isSingleton);
   }
 
   /// Maps the given type to the given factory function. Optionally give it a named key.
@@ -118,16 +116,15 @@ class Injector {
   ///
   /// ```dart
   /// final injector = Injector.getInstance();
-  /// injector.map(Logger, (injector, params) => new AppLogger(params["logKey"]));
-  /// injector.map(AppLogger, (injector, params) => new AppLogger(injector.get(Logger, params["apiUrl"])), key: "AppLogger");
+  /// injector.map(Logger, (injector, params) => AppLogger(params["logKey"]));
+  /// injector.map(AppLogger, (injector, params) => AppLogger(injector.get(Logger, params["apiUrl"])), key: "AppLogger");
   /// ```
   void mapWithParams<T>(ObjectFactoryWithParamsFn<T> factoryFn, {String key}) {
     final objectKey = _makeKey(T, key);
     if (_factories.containsKey(objectKey)) {
-      throw new InjectorException(
-          "Mapping already present for type '$objectKey'");
+      throw InjectorException("Mapping already present for type '$objectKey'");
     }
-    _factories[objectKey] = new TypeFactory<T>(factoryFn, false);
+    _factories[objectKey] = TypeFactory<T>(factoryFn, false);
   }
 
   /// Gets an instance of the given type of [T] and optional given key and parameters.
@@ -141,11 +138,11 @@ class Injector {
   /// ```dart
   /// final injector = Injector.getInstance();
   /// // map the type
-  /// injector.map<Logger>((injector) => new AppLogger());
+  /// injector.map<Logger>((injector) => AppLogger());
   /// // get the type
   /// injector.get<Logger>().log("some message");
   ///
-  /// injector.mapWithParams<SomeType>((i, p) => new SomeType(p["id"]))
+  /// injector.mapWithParams<SomeType>((i, p) => SomeType(p["id"]))
   /// final instance = injector.get<SomeType>(additionalParameters: { "id": "some-id" });
   /// print(istance.id) // prints 'some-id'
   /// ```
@@ -153,8 +150,7 @@ class Injector {
     final objectKey = _makeKey(T, key);
     final objectFactory = _factories[objectKey];
     if (objectFactory == null) {
-      throw new InjectorException(
-          "Cannot find object factory for '$objectKey'");
+      throw InjectorException("Cannot find object factory for '$objectKey'");
     }
 
     return objectFactory.get(this, additionalParameters);
@@ -163,7 +159,7 @@ class Injector {
   /// Gets all the mapped instances of the given type and additional parameters
   Iterable<T> getAll<T>({Map<String, dynamic> additionalParameters}) {
     final keyForType = _makeKey(T).replaceFirst("default", "");
-    final instances = new List<T>();
+    final instances = List<T>();
     _factories.forEach((k, f) {
       if (k.contains(keyForType)) {
         instances.add(f.get(this, additionalParameters));

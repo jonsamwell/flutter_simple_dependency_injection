@@ -1,3 +1,6 @@
+## [1.0.2] - 18/12/2019.
+* Fixed some lint warnings
+
 ## [1.0.1] - 05/03/2019.
 * Removed dependency on flutter
 * Updated example to explain how to use dependency injection rather than service location
