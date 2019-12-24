@@ -1,3 +1,6 @@
+## [1.0.2+1] - 24/12/2019.
+* Fixed various analyzer warnings
+
 ## [1.0.2] - 18/12/2019.
 * Fixed some lint warnings
 

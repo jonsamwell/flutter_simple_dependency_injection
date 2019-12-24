@@ -1,20 +1,14 @@
-# https://www.dartlang.org/guides/language/analysis-options
-analyzer:
-  errors:
-    # treat missing required parameters as a warning (not a hint)
-    missing_required_param: warning
-    # treat missing returns as a warning (not a hint)
-    missing_return: warning
-    # allow having TODOs in the code
-    todo: ignore
+# Defines a default set of lint rules enforced for
+# projects at Google. For details and rationale,
+# see https://github.com/dart-lang/pedantic#enabled-lints.
+include: package:pedantic/analysis_options.yaml
 
-# Source of linter options:
-# http://dart-lang.github.io/linter/lints/options/options.html
+# For lint rules and documentation, see http://dart-lang.github.io/linter/lints.
+# Uncomment to specify additional rules.
 linter:
   rules:
-    - camel_case_types
-    - hash_and_equals
-    - iterable_contains_unrelated_type
-    - list_remove_unrelated_type
-    - unrelated_type_equality_checks
-    - valid_regexps
+    await_only_futures: true
+
+# analyzer:
+#   exclude:
+#     - path/to/excluded/files/**

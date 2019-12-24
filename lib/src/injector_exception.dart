@@ -4,5 +4,5 @@ class InjectorException implements Exception {
   InjectorException(this.message);
 
   @override
-  String toString() => "Injector Exception: ${this.message}";
+  String toString() => 'Injector Exception: $message';
 }

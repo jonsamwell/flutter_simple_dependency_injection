@@ -22,22 +22,22 @@ void main() {
 
   // passing in additional arguments when getting an instance
   final instance =
-      injector.get<SomeOtherType>(additionalParameters: {"id": "some-id"});
+      injector.get<SomeOtherType>(additionalParameters: {'id': 'some-id'});
   print(instance.id); // prints 'some-id'
 }
 
 class ModuleContainer {
   Injector initialise(Injector injector) {
     injector.map<Logger>((i) => Logger(), isSingleton: true);
-    injector.map<String>((i) => "https://api.com/", key: "apiUrl");
+    injector.map<String>((i) => 'https://api.com/', key: 'apiUrl');
     injector.map<SomeService>(
-        (i) => SomeService(i.get<Logger>(), i.get<String>(key: "apiUrl")));
+        (i) => SomeService(i.get<Logger>(), i.get<String>(key: 'apiUrl')));
 
-    injector.map<SomeType>((injector) => SomeType("0"));
-    injector.map<SomeType>((injector) => SomeType("1"), key: "One");
-    injector.map<SomeType>((injector) => SomeType("2"), key: "Two");
+    injector.map<SomeType>((injector) => SomeType('0'));
+    injector.map<SomeType>((injector) => SomeType('1'), key: 'One');
+    injector.map<SomeType>((injector) => SomeType('2'), key: 'Two');
 
-    injector.mapWithParams<SomeOtherType>((i, p) => SomeOtherType(p["id"]));
+    injector.mapWithParams<SomeOtherType>((i, p) => SomeOtherType(p['id']));
 
     return injector;
   }
@@ -54,7 +54,7 @@ class SomeService {
   SomeService(this._logger, this._apiUrl);
 
   void doSomething() {
-    _logger.log("Doing something with the api at '$_apiUrl'");
+    _logger.log('Doing something with the api at `$_apiUrl`');
   }
 }
 

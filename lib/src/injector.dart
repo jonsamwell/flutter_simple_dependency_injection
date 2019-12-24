@@ -1,9 +1,11 @@
 import 'package:flutter_simple_dependency_injection/src/injector_exception.dart';
 import 'package:flutter_simple_dependency_injection/src/type_factory.dart';
 
-typedef T ObjectFactoryFn<T>(Injector injector);
-typedef T ObjectFactoryWithParamsFn<T>(
-    Injector injector, Map<String, dynamic> additionalParameters);
+typedef ObjectFactoryFn<T> = T Function(Injector injector);
+typedef ObjectFactoryWithParamsFn<T> = T Function(
+  Injector injector,
+  Map<String, dynamic> additionalParameters,
+);
 
 /// A simple injector implementation for use in Flutter projects where conventional relfection (mirrors)
 /// is not available.
@@ -14,8 +16,8 @@ typedef T ObjectFactoryWithParamsFn<T>(
 /// void main() {
 ///   final injector = Injector.getInjector();
 ///   injector.map<Logger>((i) => Logger(), isSingleton: true);
-///   injector.map<String>((i) => "https://api.com/", key: "apiUrl");
-///   injector.map<SomeService>((i) => SomeService(i.get(Logger), i.get(String, "apiUrl")));
+///   injector.map<String>((i) => 'https://api.com/, key: 'apiUrl');
+///   injector.map<SomeService>((i) => SomeService(i.get(Logger), i.get(String, 'apiUrl')));
 ///
 ///   injector.get<SomeService>().doSomething();
 /// }
@@ -36,9 +38,9 @@ typedef T ObjectFactoryWithParamsFn<T>(
 /// }
 ///```
 class Injector {
-  static final Map<String, Injector> _injectors = Map<String, Injector>();
+  static final Map<String, Injector> _injectors = <String, Injector>{};
   final Map<String, TypeFactory<Object>> _factories =
-      Map<String, TypeFactory<Object>>();
+      <String, TypeFactory<Object>>{};
 
   /// The name of this injector.
   ///
@@ -55,7 +57,7 @@ class Injector {
   /// final defaultInjector = Injector.getInjector();
   /// final isolatedInjector = Injector.getInjector("Isolated");
   /// ```
-  static Injector getInjector([String name = "default"]) {
+  static Injector getInjector([String name = 'default']) {
     if (!_injectors.containsKey(name)) {
       _injectors[name] = Injector._internal(name);
     }
@@ -66,7 +68,7 @@ class Injector {
   Injector._internal(this.name);
 
   String _makeKey<T>(T type, [String key]) =>
-      "${type.toString()}::${key == null ? "default" : key}";
+      '${type.toString()}::${key ?? 'default'}';
 
   /// Maps the given type to the given factory function. Optionally specify the type as a singleton and give it a named key.
   ///
@@ -158,8 +160,8 @@ class Injector {
 
   /// Gets all the mapped instances of the given type and additional parameters
   Iterable<T> getAll<T>({Map<String, dynamic> additionalParameters}) {
-    final keyForType = _makeKey(T).replaceFirst("default", "");
-    final instances = List<T>();
+    final keyForType = _makeKey(T).replaceFirst('default', '');
+    final instances = <T>[];
     _factories.forEach((k, f) {
       if (k.contains(keyForType)) {
         instances.add(f.get(this, additionalParameters));
