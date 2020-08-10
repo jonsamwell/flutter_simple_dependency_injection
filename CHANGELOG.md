@@ -1,21 +1,30 @@
-## [1.0.2+1] - 24/12/2019.
+## [1.0.3] - 11/08/2020
+* Added the ability to remove a mapping and check if a mapping is present in the injector
+```dart
+    // the new api
+    final injector = Injector.getInstance();
+    injector.map<SomeType>((i) => new SomeType())
+    final instance = injector.get<SomeType>();
+    injector.removeMapping<SomeType>();
+```
+## [1.0.2+1] - 24/12/2019
 * Fixed various analyzer warnings
 
-## [1.0.2] - 18/12/2019.
+## [1.0.2] - 18/12/2019
 * Fixed some lint warnings
 
-## [1.0.1] - 05/03/2019.
+## [1.0.1] - 05/03/2019
 * Removed dependency on flutter
 * Updated example to explain how to use dependency injection rather than service location
 
-## [0.0.4] - 05/07/2018.
+## [0.0.4] - 05/07/2018
 * Added ability to pass in additional arguments in the factory function with a new method call [mapWithParams].
 
 ```dart
     final injector = Injector.getInstance();
     injector.mapWithParams<SomeType>((i, p) => new SomeType(p["id"]))
     final instance = injector.get<SomeType>(additionalParameters: { "id": "some-id" });
-    print(istance.id) // prints 'some-id'
+    print(instance.id) // prints 'some-id'
 ```
 
 * Added ability to get all objects of the same mapped type

@@ -7,7 +7,7 @@ typedef ObjectFactoryWithParamsFn<T> = T Function(
   Map<String, dynamic> additionalParameters,
 );
 
-/// A simple injector implementation for use in Flutter projects where conventional relfection (mirrors)
+/// A simple injector implementation for use in Flutter projects where conventional reflection (mirrors)
 /// is not available.
 ///
 ///```dart
@@ -129,13 +129,47 @@ class Injector {
     _factories[objectKey] = TypeFactory<T>(factoryFn, false);
   }
 
+  /// Returns true if the given type has been mapped. Optionally give it a named key.
+  bool isMapped<T>({
+    String key,
+  }) {
+    final objectKey = _makeKey(T, key);
+    return _factories.containsKey(objectKey);
+  }
+
+  /// Removes the type mapping from the injector if present. Optionally give it a named key.
+  ///
+  /// Throws an [InjectorException] if the type and or key combination is not present.
+  void removeMapping<T>({
+    String key,
+  }) {
+    final objectKey = _makeKey(T, key);
+    if (_factories.containsKey(objectKey)) {
+      _factories.remove(objectKey);
+    } else {
+      throw InjectorException("Factory not present for type '$objectKey'");
+    }
+  }
+
+  /// Removes all the mappings for the given type
+  void removeAllMappings<T>() {
+    final keyForType = _makeKey(T).replaceFirst('default', '');
+    final keysToRemove = <String>[];
+    _factories.forEach((k, f) {
+      if (k.contains(keyForType)) {
+        keysToRemove.add(k);
+      }
+    });
+
+    keysToRemove.forEach((key) => _factories.remove(key));
+  }
+
   /// Gets an instance of the given type of [T] and optional given key and parameters.
   ///
   /// Throws an [InjectorException] if the given type has not been mapped
   /// using the map method.
   ///
   /// Note that instance that are mapped to need additional parameters cannot be singletons
-  ///
   ///
   /// ```dart
   /// final injector = Injector.getInstance();
@@ -146,7 +180,7 @@ class Injector {
   ///
   /// injector.mapWithParams<SomeType>((i, p) => SomeType(p["id"]))
   /// final instance = injector.get<SomeType>(additionalParameters: { "id": "some-id" });
-  /// print(istance.id) // prints 'some-id'
+  /// print(instance.id) // prints 'some-id'
   /// ```
   T get<T>({String key, Map<String, dynamic> additionalParameters}) {
     final objectKey = _makeKey(T, key);

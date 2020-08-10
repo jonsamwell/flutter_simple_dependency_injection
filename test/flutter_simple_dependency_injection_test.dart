@@ -45,7 +45,7 @@ class ObjectB {
 }
 
 void main() {
-  test('non-genric map test', () async {
+  test('non-generic map test', () async {
     final injector = Injector.getInjector();
     injector.map((i) => ObjectC('C', 'B'));
     final instance = injector.get<ObjectC>();
@@ -219,6 +219,49 @@ void main() {
             e is InjectorException &&
             e.message ==
                 "Cannot find object factory for 'ObjectWithNoDependencies::Key'")));
+    injector.dispose();
+  });
+
+  test('can remove mapping and map again', () async {
+    final injector = Injector.getInjector();
+    injector.map<ObjectWithNoDependencies>(
+        (injector) => ObjectWithNoDependencies());
+
+    expect(injector.isMapped<ObjectWithNoDependencies>(), true);
+    injector.removeMapping<ObjectWithNoDependencies>();
+    expect(injector.isMapped<ObjectWithNoDependencies>(), false);
+
+    injector.map<ObjectWithNoDependencies>(
+        (injector) => ObjectWithNoDependencies());
+    expect(injector.isMapped<ObjectWithNoDependencies>(), true);
+
+    expect(injector.get<ObjectWithNoDependencies>() is ObjectWithNoDependencies,
+        true);
+
+    injector.dispose();
+  });
+
+  test('can remove all mappings of type', () async {
+    final injector = Injector.getInjector();
+    injector.map<ObjectWithNoDependencies>(
+        (injector) => ObjectWithNoDependencies());
+    injector.map<ObjectWithNoDependencies>(
+      (injector) => ObjectWithNoDependencies(),
+      key: 'one',
+    );
+    injector.map<ObjectWithNoDependencies>(
+      (injector) => ObjectWithNoDependencies(),
+      key: 'two',
+    );
+
+    expect(injector.isMapped<ObjectWithNoDependencies>(), true);
+    expect(injector.isMapped<ObjectWithNoDependencies>(key: 'one'), true);
+    expect(injector.isMapped<ObjectWithNoDependencies>(key: 'two'), true);
+    injector.removeAllMappings<ObjectWithNoDependencies>();
+    expect(injector.isMapped<ObjectWithNoDependencies>(), false);
+    expect(injector.isMapped<ObjectWithNoDependencies>(key: 'one'), false);
+    expect(injector.isMapped<ObjectWithNoDependencies>(key: 'two'), false);
+
     injector.dispose();
   });
 }
