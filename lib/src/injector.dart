@@ -81,6 +81,9 @@ class Injector {
   /// When [isSingleton] is true the first returned instances of the object is stored and
   /// subsequently return in future calls.
   ///
+  /// When [overriding] is true, if  already exist something present on mapping, no exception 
+  /// will be throw, and the old reference will be override by the new one.
+  ///
   /// When [key] is provided the object is keyed by type name and the given key.
   ///
   /// Throws an [InjectorException] if the type and or key combination has already been mapped.
@@ -93,9 +96,9 @@ class Injector {
   /// injector.map(String, (injector) => "https://api.com/", key: "ApiUrl");
   /// ```
   void map<T>(ObjectFactoryFn<T> factoryFn,
-      {bool isSingleton = false, String key}) {
+      {bool isSingleton = false, bool overriding = false, String key}) {
     final objectKey = _makeKey(T, key);
-    if (_factories.containsKey(objectKey)) {
+    if (_factories.containsKey(objectKey) && !overriding) {
       throw InjectorException("Mapping already present for type '$objectKey'");
     }
     _factories[objectKey] = TypeFactory<T>((i, p) => factoryFn(i), isSingleton);
@@ -112,6 +115,9 @@ class Injector {
   /// When [isSingleton] is true the first returned instances of the object is stored and
   /// subsequently return in future calls.
   ///
+  /// When [overriding] is true, if  already exist something present on mapping, no exception 
+  /// will be throw, and the old reference will be override by the new one.
+  ///
   /// When [key] is provided the object is keyed by type name and the given key.
   ///
   /// Throws an [InjectorException] if the type and or key combination has already been mapped.
@@ -121,9 +127,9 @@ class Injector {
   /// injector.map(Logger, (injector, params) => AppLogger(params["logKey"]));
   /// injector.map(AppLogger, (injector, params) => AppLogger(injector.get(Logger, params["apiUrl"])), key: "AppLogger");
   /// ```
-  void mapWithParams<T>(ObjectFactoryWithParamsFn<T> factoryFn, {String key}) {
+  void mapWithParams<T>(ObjectFactoryWithParamsFn<T> factoryFn, {String key, bool overriding = false }) {
     final objectKey = _makeKey(T, key);
-    if (_factories.containsKey(objectKey)) {
+    if (_factories.containsKey(objectKey) && !overriding) {
       throw InjectorException("Mapping already present for type '$objectKey'");
     }
     _factories[objectKey] = TypeFactory<T>(factoryFn, false);
