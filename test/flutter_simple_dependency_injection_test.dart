@@ -80,6 +80,40 @@ void main() {
                 "Cannot find object factory for 'ObjectWithNoDependencies::default'")));
   });
 
+  test('can override a mapped value, using overriding', () async {
+    final injector = Injector.getInjector();
+    injector.map<ObjectWithGenerics<String>>(
+        (injector) => ObjectWithGenerics('Hello-one'));
+
+    injector.map<ObjectWithGenerics<String>>(
+        (injector) => ObjectWithGenerics('Hello-one-with-key'), key: 'hello');
+
+
+    injector.map<ObjectWithGenerics<String>>(
+        (injector) => ObjectWithGenerics('Hello-two'),
+        overriding: true);
+
+    injector.map<ObjectWithGenerics<String>>(
+        (injector) => ObjectWithGenerics('Hello-two-with-key'), key: 'hello', overriding: true);
+
+    final stringInstance = injector.get<ObjectWithGenerics<String>>();
+    final stringInstanceWithKey = injector.get<ObjectWithGenerics<String>>(key: 'hello');
+
+    expect(stringInstance.propertyOfType, 'Hello-two');
+    expect(stringInstanceWithKey.propertyOfType, 'Hello-two-with-key');
+  });
+
+
+  test('can\'t override a mapped value, by default', () async {
+    final injector = Injector.getInjector();
+    injector.map<ObjectWithGenerics<String>>(
+        (injector) => ObjectWithGenerics('Hello-one'));
+
+
+    expect(() => injector.map<ObjectWithGenerics<String>>(
+        (injector) => ObjectWithGenerics('Hello-one')), throwsException);
+  });
+
   test('can map generic types', () async {
     final injector = Injector.getInjector();
     injector.map<ObjectWithGenerics<String>>(
