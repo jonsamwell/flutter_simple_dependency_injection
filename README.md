@@ -79,9 +79,10 @@ class ModuleContainer {
     injector.map<SomeService>(
         (i) => SomeService(i.get<Logger>(), i.get<String>(key: "apiUrl")));
 
+    // note that you can configure mapping in a fluent programming style too
     injector.map<SomeType>((injector) => SomeType("0"));
-    injector.map<SomeType>((injector) => SomeType("1"), key: "One");
-    injector.map<SomeType>((injector) => SomeType("2"), key: "Two");
+            ..map<SomeType>((injector) => SomeType("1"), key: "One");
+            ..map<SomeType>((injector) => SomeType("2"), key: "Two");
 
     injector.mapWithParams<SomeOtherType>((i, p) => SomeOtherType(p["id"]));
 

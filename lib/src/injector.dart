@@ -67,8 +67,9 @@ class Injector {
 
   Injector._internal(this.name);
 
-  String _makeKey<T>(T type, [String key]) =>
-      '${type.toString()}::${key ?? 'default'}';
+  String _makeKey<T>(T type, [String key]) => '${_makeKeyPrefix(type)}${key ?? 'default'}';
+
+  String _makeKeyPrefix<T>(T type) => '${type.toString()}::';
 
   /// Maps the given type to the given factory function. Optionally specify the type as a singleton and give it a named key.
   ///
@@ -85,6 +86,8 @@ class Injector {
   ///
   /// Throws an [InjectorException] if the type and or key combination has already been mapped.
   ///
+  /// Returns the current injector instance.
+  ///
   /// ```dart
   /// final injector = Injector.getInstance();
   /// injector.map(Logger, (injector) => AppLogger());
@@ -92,13 +95,22 @@ class Injector {
   /// injector.map(AppLogger, (injector) => AppLogger(injector.get(Logger)), key: "AppLogger");
   /// injector.map(String, (injector) => "https://api.com/", key: "ApiUrl");
   /// ```
-  void map<T>(ObjectFactoryFn<T> factoryFn,
+  ///
+  /// You can also configure mapping in a fluent programming style:
+  /// ```dart
+  /// Injector.getInstance().map(Logger, (injector) => AppLogger());
+  ///                       ..map(DbLogger, (injector) => DbLogger(), isSingleton: true);
+  ///                       ..map(AppLogger, (injector) => AppLogger(injector.get(Logger)), key: "AppLogger");
+  ///                       ..map(String, (injector) => "https://api.com/", key: "ApiUrl");
+  /// ```
+  Injector map<T>(ObjectFactoryFn<T> factoryFn,
       {bool isSingleton = false, String key}) {
     final objectKey = _makeKey(T, key);
     if (_factories.containsKey(objectKey)) {
       throw InjectorException("Mapping already present for type '$objectKey'");
     }
     _factories[objectKey] = TypeFactory<T>((i, p) => factoryFn(i), isSingleton);
+    return this;
   }
 
   /// Maps the given type to the given factory function. Optionally give it a named key.
@@ -116,52 +128,48 @@ class Injector {
   ///
   /// Throws an [InjectorException] if the type and or key combination has already been mapped.
   ///
+  /// Returns the current injector instance.
+  ///
   /// ```dart
   /// final injector = Injector.getInstance();
   /// injector.map(Logger, (injector, params) => AppLogger(params["logKey"]));
   /// injector.map(AppLogger, (injector, params) => AppLogger(injector.get(Logger, params["apiUrl"])), key: "AppLogger");
   /// ```
-  void mapWithParams<T>(ObjectFactoryWithParamsFn<T> factoryFn, {String key}) {
+  Injector mapWithParams<T>(ObjectFactoryWithParamsFn<T> factoryFn, {String key}) {
     final objectKey = _makeKey(T, key);
     if (_factories.containsKey(objectKey)) {
       throw InjectorException("Mapping already present for type '$objectKey'");
     }
     _factories[objectKey] = TypeFactory<T>(factoryFn, false);
+    return this;
   }
 
   /// Returns true if the given type has been mapped. Optionally give it a named key.
-  bool isMapped<T>({
-    String key,
-  }) {
+  bool isMapped<T>({String key}) {
     final objectKey = _makeKey(T, key);
     return _factories.containsKey(objectKey);
   }
 
   /// Removes the type mapping from the injector if present. Optionally give it a named key.
+  /// The remove operation is silent, means no exception is thrown if the type or key combination is not present.
   ///
-  /// Throws an [InjectorException] if the type and or key combination is not present.
-  void removeMapping<T>({
-    String key,
-  }) {
+  /// Returns the current injector instance.
+  Injector removeMapping<T>({String key}) {
     final objectKey = _makeKey(T, key);
     if (_factories.containsKey(objectKey)) {
       _factories.remove(objectKey);
-    } else {
-      throw InjectorException("Factory not present for type '$objectKey'");
     }
+    return this;
   }
 
   /// Removes all the mappings for the given type
-  void removeAllMappings<T>() {
-    final keyForType = _makeKey(T).replaceFirst('default', '');
-    final keysToRemove = <String>[];
-    _factories.forEach((k, f) {
-      if (k.contains(keyForType)) {
-        keysToRemove.add(k);
-      }
-    });
-
-    keysToRemove.forEach((key) => _factories.remove(key));
+  /// The remove operation is silent, means no exception is thrown if the type or key combination is not present.
+  ///
+  /// Returns the current injector instance.
+  Injector removeAllMappings<T>() {
+    final keyForType = _makeKeyPrefix(T);
+    _factories.removeWhere((key, value) => key.startsWith(keyForType));
+    return this;
   }
 
   /// Gets an instance of the given type of [T] and optional given key and parameters.
@@ -194,15 +202,10 @@ class Injector {
 
   /// Gets all the mapped instances of the given type and additional parameters
   Iterable<T> getAll<T>({Map<String, dynamic> additionalParameters}) {
-    final keyForType = _makeKey(T).replaceFirst('default', '');
-    final instances = <T>[];
-    _factories.forEach((k, f) {
-      if (k.contains(keyForType)) {
-        instances.add(f.get(this, additionalParameters));
-      }
-    });
-
-    return instances;
+    final keyForType = _makeKeyPrefix(T);
+    return _factories.entries //
+        .where((entry) => entry.key.startsWith(keyForType)) //
+        .map((entry) => entry.value.get(this, additionalParameters) as T);
   }
 
   /// Disposes of the injector instance and removes it from the named collection of injectors
