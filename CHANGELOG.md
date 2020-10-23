@@ -1,3 +1,17 @@
+## [1.0.4] - 24/10/2020
+* Made various code optimizations.
+* Added a possibility for method chaining.
+* Silent removing of non existing mappings (without throwing exceptions).
+* The Injector class has a factory constructor now. An Injector instance can be instantiated
+  more shorter. `Injector.getInjector()` is marked as deprecated.
+```dart
+    // example with introduced changes
+    final injector = Injector();
+    injector.map<SomeType>((injector) => SomeType("0"))
+            ..map<SomeType>((injector) => SomeType("1"), key: "One")
+            ..map<SomeType>((injector) => SomeType("2"), key: "Two");
+```
+
 ## [1.0.3] - 11/08/2020
 * Added the ability to remove a mapping and check if a mapping is present in the injector
 ```dart
