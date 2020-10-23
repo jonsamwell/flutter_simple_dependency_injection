@@ -14,7 +14,7 @@ typedef ObjectFactoryWithParamsFn<T> = T Function(
 /// import 'package:flutter_simple_dependency_injection/injector.dart';
 ///
 /// void main() {
-///   final injector = Injector.getInjector();
+///   final injector = Injector();
 ///   injector.map<Logger>((i) => Logger(), isSingleton: true);
 ///   injector.map<String>((i) => 'https://api.com/, key: 'apiUrl');
 ///   injector.map<SomeService>((i) => SomeService(i.get(Logger), i.get(String, 'apiUrl')));
@@ -47,6 +47,11 @@ class Injector {
   /// Naming injectors enable each app to have multiple atomic injectors.
   final String name;
 
+  @Deprecated('Prefer to use the factory constructor Injector([String name = "default"])')
+  static Injector getInjector([String name = 'default']) {
+    return Injector(name);
+  }
+
   /// Get the instance of the named injector creating an [Injector] instance
   /// if the named injector cannot be found.
   ///
@@ -54,10 +59,10 @@ class Injector {
   /// will be returned.
   ///
   /// ```dart
-  /// final defaultInjector = Injector.getInjector();
-  /// final isolatedInjector = Injector.getInjector("Isolated");
+  /// final defaultInjector = Injector();
+  /// final isolatedInjector = Injector("Isolated");
   /// ```
-  static Injector getInjector([String name = 'default']) {
+  factory Injector([String name = 'default']) {
     if (!_injectors.containsKey(name)) {
       _injectors[name] = Injector._internal(name);
     }
