@@ -47,7 +47,8 @@ class Injector {
   /// Naming injectors enable each app to have multiple atomic injectors.
   final String name;
 
-  @Deprecated('Prefer to use the factory constructor Injector([String name = "default"])')
+  @Deprecated(
+      'Prefer to use the factory constructor Injector([String name = "default"])')
   static Injector getInjector([String name = 'default']) {
     return Injector(name);
   }
@@ -72,7 +73,8 @@ class Injector {
 
   Injector._internal(this.name);
 
-  String _makeKey<T>(T type, [String key]) => '${_makeKeyPrefix(type)}${key ?? 'default'}';
+  String _makeKey<T>(T type, [String key]) =>
+      '${_makeKeyPrefix(type)}${key ?? 'default'}';
 
   String _makeKeyPrefix<T>(T type) => '${type.toString()}::';
 
@@ -140,7 +142,8 @@ class Injector {
   /// injector.map(Logger, (injector, params) => AppLogger(params["logKey"]));
   /// injector.map(AppLogger, (injector, params) => AppLogger(injector.get(Logger, params["apiUrl"])), key: "AppLogger");
   /// ```
-  Injector mapWithParams<T>(ObjectFactoryWithParamsFn<T> factoryFn, {String key}) {
+  Injector mapWithParams<T>(ObjectFactoryWithParamsFn<T> factoryFn,
+      {String key}) {
     final objectKey = _makeKey(T, key);
     if (_factories.containsKey(objectKey)) {
       throw InjectorException("Mapping already present for type '$objectKey'");

@@ -6,7 +6,7 @@ void main() {
   final injector = ModuleContainer().initialise(Injector());
 
   // NOTE: it is best to architect your code so that you never need to
-  // interact with the injector itself.  Make this framework act like a depencendy injector
+  // interact with the injector itself.  Make this framework act like a dependency injector
   // by having dependencies injected into objects in their constructors.  That way you avoid
   // any tight coupling with the injector itself.
 
