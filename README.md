@@ -37,19 +37,19 @@ import 'package:flutter_simple_dependency_injection/injector.dart';
 
 As this injector relies on factories rather than reflection (as mirrors in not available in Flutter)
 each mapped type needs to provide a factory function.  In most cases this can just be a simple 
-new object returned function.  In slightly more advanced scenarios where the type to be created relies
+new object returned function. In slightly more advanced scenarios where the type to be created relies
 on other types an injector instances is passed into the factory function to allow the type of be created
 to get other types it depends on (see below for examples).
-
-    
 
 ``` dart
 import 'package:flutter_simple_dependency_injection/injector.dart';
 
 void main() {
   // it is best to place all injector initialisation work into one or more modules
-  // so it can act more like a dependency injector than a service locator
-  final injector = ModuleContainer().initialise(Injector.getInjector());
+  // so it can act more like a dependency injector than a service locator.
+  // The Injector implements a singleton pattern. You can get a singleton injector instance
+  // just by calling Injector().
+  final injector = ModuleContainer().initialise(Injector());
 
   // NOTE: it is best to architect your code so that you never need to
   // interact with the injector itself.  Make this framework act like a dependency injector
@@ -79,9 +79,10 @@ class ModuleContainer {
     injector.map<SomeService>(
         (i) => SomeService(i.get<Logger>(), i.get<String>(key: "apiUrl")));
 
-    injector.map<SomeType>((injector) => SomeType("0"));
-    injector.map<SomeType>((injector) => SomeType("1"), key: "One");
-    injector.map<SomeType>((injector) => SomeType("2"), key: "Two");
+    // note that you can configure mapping in a fluent programming style too
+    injector.map<SomeType>((injector) => SomeType("0"))
+            ..map<SomeType>((injector) => SomeType("1"), key: "One")
+            ..map<SomeType>((injector) => SomeType("2"), key: "Two");
 
     injector.mapWithParams<SomeOtherType>((i, p) => SomeOtherType(p["id"]));
 
@@ -130,11 +131,18 @@ You can remove a mapped a factory/instance at any time:
 
 ### Multiple Injectors
 
-The Injector class has a static method [getInjector] that by default returns the default instance of the injector.  In most cases this will be enough.
-However, you can pass a name into this method to return another isolated injector that is independent from the default injector.  Passing in a new 
-injector name will create the injector if it has not be retrieved before.  To destroy isolated injector instances call their [dispose] method.
+The Injector class has a factory constructor that by default returns the default singleton instance of the injector. In most cases this will be enough.
+However, you can pass a name into this factory constructor to return another isolated injector that is independent from the default injector. Passing in a new 
+injector name will create the injector if it has not be retrieved before.
 
 ``` dart
-  final defaultInjector = Injector.getInjector();
-  final isolatedInjector = Injector.getInjector("Isolated");
+  final defaultInjector = Injector();
+  final isolatedInjector = Injector("Isolated");
+```
+
+To destroy an injector instance call its `dispose` method. The particular instance of the injector with all mappings will be removed.
+
+``` dart
+  Injector().dispose();
+  Injector("Isolated").dispose();
 ```
