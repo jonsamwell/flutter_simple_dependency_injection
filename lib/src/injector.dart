@@ -7,14 +7,14 @@ typedef ObjectFactoryWithParamsFn<T> = T Function(
   Map<String, dynamic> additionalParameters,
 );
 
-/// A simple injector implementation for use in Flutter projects where conventional relfection (mirrors)
+/// A simple injector implementation for use in Flutter projects where conventional reflection (mirrors)
 /// is not available.
 ///
 ///```dart
 /// import 'package:flutter_simple_dependency_injection/injector.dart';
 ///
 /// void main() {
-///   final injector = Injector.getInjector();
+///   final injector = Injector();
 ///   injector.map<Logger>((i) => Logger(), isSingleton: true);
 ///   injector.map<String>((i) => 'https://api.com/, key: 'apiUrl');
 ///   injector.map<SomeService>((i) => SomeService(i.get(Logger), i.get(String, 'apiUrl')));
@@ -47,6 +47,12 @@ class Injector {
   /// Naming injectors enable each app to have multiple atomic injectors.
   final String name;
 
+  @Deprecated(
+      'Prefer to use the factory constructor Injector([String name = "default"])')
+  static Injector getInjector([String name = 'default']) {
+    return Injector(name);
+  }
+
   /// Get the instance of the named injector creating an [Injector] instance
   /// if the named injector cannot be found.
   ///
@@ -54,10 +60,10 @@ class Injector {
   /// will be returned.
   ///
   /// ```dart
-  /// final defaultInjector = Injector.getInjector();
-  /// final isolatedInjector = Injector.getInjector("Isolated");
+  /// final defaultInjector = Injector();
+  /// final isolatedInjector = Injector("Isolated");
   /// ```
-  static Injector getInjector([String name = 'default']) {
+  factory Injector([String name = 'default']) {
     if (!_injectors.containsKey(name)) {
       _injectors[name] = Injector._internal(name);
     }
@@ -68,7 +74,9 @@ class Injector {
   Injector._internal(this.name);
 
   String _makeKey<T>(T type, [String key]) =>
-      '${type.toString()}::${key ?? 'default'}';
+      '${_makeKeyPrefix(type)}${key ?? 'default'}';
+
+  String _makeKeyPrefix<T>(T type) => '${type.toString()}::';
 
   /// Maps the given type to the given factory function. Optionally specify the type as a singleton and give it a named key.
   ///
@@ -88,6 +96,8 @@ class Injector {
   ///
   /// Throws an [InjectorException] if the type and or key combination has already been mapped.
   ///
+  /// Returns the current injector instance.
+  ///
   /// ```dart
   /// final injector = Injector.getInstance();
   /// injector.map(Logger, (injector) => AppLogger());
@@ -95,13 +105,27 @@ class Injector {
   /// injector.map(AppLogger, (injector) => AppLogger(injector.get(Logger)), key: "AppLogger");
   /// injector.map(String, (injector) => "https://api.com/", key: "ApiUrl");
   /// ```
+<<<<<<< HEAD
   void map<T>(ObjectFactoryFn<T> factoryFn,
       {bool isSingleton = false, bool overriding = false, String key}) {
+=======
+  ///
+  /// You can also configure mapping in a fluent programming style:
+  /// ```dart
+  /// Injector.getInstance().map(Logger, (injector) => AppLogger());
+  ///                       ..map(DbLogger, (injector) => DbLogger(), isSingleton: true);
+  ///                       ..map(AppLogger, (injector) => AppLogger(injector.get(Logger)), key: "AppLogger");
+  ///                       ..map(String, (injector) => "https://api.com/", key: "ApiUrl");
+  /// ```
+  Injector map<T>(ObjectFactoryFn<T> factoryFn,
+      {bool isSingleton = false, String key}) {
+>>>>>>> 1e9bb87
     final objectKey = _makeKey(T, key);
     if (_factories.containsKey(objectKey) && !overriding) {
       throw InjectorException("Mapping already present for type '$objectKey'");
     }
     _factories[objectKey] = TypeFactory<T>((i, p) => factoryFn(i), isSingleton);
+    return this;
   }
 
   /// Maps the given type to the given factory function. Optionally give it a named key.
@@ -122,17 +146,53 @@ class Injector {
   ///
   /// Throws an [InjectorException] if the type and or key combination has already been mapped.
   ///
+  /// Returns the current injector instance.
+  ///
   /// ```dart
   /// final injector = Injector.getInstance();
   /// injector.map(Logger, (injector, params) => AppLogger(params["logKey"]));
   /// injector.map(AppLogger, (injector, params) => AppLogger(injector.get(Logger, params["apiUrl"])), key: "AppLogger");
   /// ```
+<<<<<<< HEAD
   void mapWithParams<T>(ObjectFactoryWithParamsFn<T> factoryFn, {String key, bool overriding = false }) {
+=======
+  Injector mapWithParams<T>(ObjectFactoryWithParamsFn<T> factoryFn,
+      {String key}) {
+>>>>>>> 1e9bb87
     final objectKey = _makeKey(T, key);
     if (_factories.containsKey(objectKey) && !overriding) {
       throw InjectorException("Mapping already present for type '$objectKey'");
     }
     _factories[objectKey] = TypeFactory<T>(factoryFn, false);
+    return this;
+  }
+
+  /// Returns true if the given type has been mapped. Optionally give it a named key.
+  bool isMapped<T>({String key}) {
+    final objectKey = _makeKey(T, key);
+    return _factories.containsKey(objectKey);
+  }
+
+  /// Removes the type mapping from the injector if present. Optionally give it a named key.
+  /// The remove operation is silent, means no exception is thrown if the type or key combination is not present.
+  ///
+  /// Returns the current injector instance.
+  Injector removeMapping<T>({String key}) {
+    final objectKey = _makeKey(T, key);
+    if (_factories.containsKey(objectKey)) {
+      _factories.remove(objectKey);
+    }
+    return this;
+  }
+
+  /// Removes all the mappings for the given type
+  /// The remove operation is silent, means no exception is thrown if the type or key combination is not present.
+  ///
+  /// Returns the current injector instance.
+  Injector removeAllMappings<T>() {
+    final keyForType = _makeKeyPrefix(T);
+    _factories.removeWhere((key, value) => key.startsWith(keyForType));
+    return this;
   }
 
   /// Gets an instance of the given type of [T] and optional given key and parameters.
@@ -141,7 +201,6 @@ class Injector {
   /// using the map method.
   ///
   /// Note that instance that are mapped to need additional parameters cannot be singletons
-  ///
   ///
   /// ```dart
   /// final injector = Injector.getInstance();
@@ -152,7 +211,7 @@ class Injector {
   ///
   /// injector.mapWithParams<SomeType>((i, p) => SomeType(p["id"]))
   /// final instance = injector.get<SomeType>(additionalParameters: { "id": "some-id" });
-  /// print(istance.id) // prints 'some-id'
+  /// print(instance.id) // prints 'some-id'
   /// ```
   T get<T>({String key, Map<String, dynamic> additionalParameters}) {
     final objectKey = _makeKey(T, key);
@@ -166,15 +225,10 @@ class Injector {
 
   /// Gets all the mapped instances of the given type and additional parameters
   Iterable<T> getAll<T>({Map<String, dynamic> additionalParameters}) {
-    final keyForType = _makeKey(T).replaceFirst('default', '');
-    final instances = <T>[];
-    _factories.forEach((k, f) {
-      if (k.contains(keyForType)) {
-        instances.add(f.get(this, additionalParameters));
-      }
-    });
-
-    return instances;
+    final keyForType = _makeKeyPrefix(T);
+    return _factories.entries //
+        .where((entry) => entry.key.startsWith(keyForType)) //
+        .map((entry) => entry.value.get(this, additionalParameters) as T);
   }
 
   /// Disposes of the injector instance and removes it from the named collection of injectors

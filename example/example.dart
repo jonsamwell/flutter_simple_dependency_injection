@@ -3,10 +3,10 @@ import 'package:flutter_simple_dependency_injection/injector.dart';
 void main() {
   // it is best to place all injector initialisation work into one or more modules
   // so it can act more like a dependency injector than a service locator
-  final injector = ModuleContainer().initialise(Injector.getInjector());
+  final injector = ModuleContainer().initialise(Injector());
 
   // NOTE: it is best to architect your code so that you never need to
-  // interact with the injector itself.  Make this framework act like a depencendy injector
+  // interact with the injector itself.  Make this framework act like a dependency injector
   // by having dependencies injected into objects in their constructors.  That way you avoid
   // any tight coupling with the injector itself.
 
