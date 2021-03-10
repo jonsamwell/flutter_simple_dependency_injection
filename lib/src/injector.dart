@@ -89,7 +89,7 @@ class Injector {
   /// When [isSingleton] is true the first returned instances of the object is stored and
   /// subsequently return in future calls.
   ///
-  /// When [overriding] is true, if  already exist something present on mapping, no exception 
+  /// When [overriding] is true, if  already exist something present on mapping, no exception
   /// will be throw, and the old reference will be override by the new one.
   ///
   /// When [key] is provided the object is keyed by type name and the given key.
@@ -134,7 +134,7 @@ class Injector {
   /// When [isSingleton] is true the first returned instances of the object is stored and
   /// subsequently return in future calls.
   ///
-  /// When [overriding] is true, if  already exist something present on mapping, no exception 
+  /// When [overriding] is true, if  already exist something present on mapping, no exception
   /// will be throw, and the old reference will be override by the new one.
   ///
   /// When [key] is provided the object is keyed by type name and the given key.
@@ -148,8 +148,10 @@ class Injector {
   /// injector.map(Logger, (injector, params) => AppLogger(params["logKey"]));
   /// injector.map(AppLogger, (injector, params) => AppLogger(injector.get(Logger, params["apiUrl"])), key: "AppLogger");
   /// ```
-  Injector mapWithParams<T extends Object>(ObjectFactoryWithParamsFn<T> factoryFn,
-      {String? key, bool overriding = false}) {
+  Injector mapWithParams<T extends Object>(
+      ObjectFactoryWithParamsFn<T> factoryFn,
+      {String? key,
+      bool overriding = false}) {
     final objectKey = _makeKey(T, key);
     if (_factories.containsKey(objectKey) && !overriding) {
       throw InjectorException("Mapping already present for type '$objectKey'");
@@ -204,7 +206,9 @@ class Injector {
   /// final instance = injector.get<SomeType>(additionalParameters: { "id": "some-id" });
   /// print(instance.id) // prints 'some-id'
   /// ```
-  T get<T extends Object>({String? key, Map<String, dynamic> additionalParameters = const <String, dynamic>{}}) {
+  T get<T extends Object>(
+      {String? key,
+      Map<String, dynamic> additionalParameters = const <String, dynamic>{}}) {
     final objectKey = _makeKey(T, key);
     final objectFactory = _factories[objectKey];
     if (objectFactory == null) {
@@ -215,7 +219,8 @@ class Injector {
   }
 
   /// Gets all the mapped instances of the given type and additional parameters
-  Iterable<T> getAll<T>({Map<String, dynamic> additionalParameters = const <String, dynamic>{}}) {
+  Iterable<T> getAll<T>(
+      {Map<String, dynamic> additionalParameters = const <String, dynamic>{}}) {
     final keyForType = _makeKeyPrefix(T);
     return _factories.entries //
         .where((entry) => entry.key.startsWith(keyForType)) //
