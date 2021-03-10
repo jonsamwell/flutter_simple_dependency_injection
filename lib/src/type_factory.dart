@@ -1,15 +1,15 @@
 import 'package:flutter_simple_dependency_injection/src/injector.dart';
 
-class TypeFactory<T> {
+class TypeFactory<T extends Object> {
   final bool _isSingleton;
   final ObjectFactoryWithParamsFn<T> _factoryFn;
-  T _instance;
+  T? _instance;
 
   TypeFactory(this._factoryFn, this._isSingleton);
 
   T get(Injector injector, Map<String, dynamic> additionalParameters) {
     if (_isSingleton && _instance != null) {
-      return _instance;
+      return _instance!;
     }
 
     final instance = _factoryFn(injector, additionalParameters);

@@ -1,8 +1,8 @@
 import 'package:flutter_simple_dependency_injection/src/injector_exception.dart';
 import 'package:flutter_simple_dependency_injection/src/type_factory.dart';
 
-typedef ObjectFactoryFn<T> = T Function(Injector injector);
-typedef ObjectFactoryWithParamsFn<T> = T Function(
+typedef ObjectFactoryFn<T extends Object> = T Function(Injector injector);
+typedef ObjectFactoryWithParamsFn<T extends Object> = T Function(
   Injector injector,
   Map<String, dynamic> additionalParameters,
 );
@@ -45,7 +45,7 @@ class Injector {
   /// The name of this injector.
   ///
   /// Naming injectors enable each app to have multiple atomic injectors.
-  final String name;
+  late final String name;
 
   @Deprecated(
       'Prefer to use the factory constructor Injector([String name = "default"])')
@@ -68,12 +68,12 @@ class Injector {
       _injectors[name] = Injector._internal(name);
     }
 
-    return _injectors[name];
+    return _injectors[name]!;
   }
 
   Injector._internal(this.name);
 
-  String _makeKey<T>(T type, [String key]) =>
+  String _makeKey<T>(T type, [String? key]) =>
       '${_makeKeyPrefix(type)}${key ?? 'default'}';
 
   String _makeKeyPrefix<T>(T type) => '${type.toString()}::';
@@ -105,10 +105,6 @@ class Injector {
   /// injector.map(AppLogger, (injector) => AppLogger(injector.get(Logger)), key: "AppLogger");
   /// injector.map(String, (injector) => "https://api.com/", key: "ApiUrl");
   /// ```
-<<<<<<< HEAD
-  void map<T>(ObjectFactoryFn<T> factoryFn,
-      {bool isSingleton = false, bool overriding = false, String key}) {
-=======
   ///
   /// You can also configure mapping in a fluent programming style:
   /// ```dart
@@ -117,9 +113,8 @@ class Injector {
   ///                       ..map(AppLogger, (injector) => AppLogger(injector.get(Logger)), key: "AppLogger");
   ///                       ..map(String, (injector) => "https://api.com/", key: "ApiUrl");
   /// ```
-  Injector map<T>(ObjectFactoryFn<T> factoryFn,
-      {bool isSingleton = false, String key}) {
->>>>>>> 1e9bb87
+  Injector map<T extends Object>(ObjectFactoryFn<T> factoryFn,
+      {bool isSingleton = false, String? key, bool overriding = false}) {
     final objectKey = _makeKey(T, key);
     if (_factories.containsKey(objectKey) && !overriding) {
       throw InjectorException("Mapping already present for type '$objectKey'");
@@ -153,12 +148,8 @@ class Injector {
   /// injector.map(Logger, (injector, params) => AppLogger(params["logKey"]));
   /// injector.map(AppLogger, (injector, params) => AppLogger(injector.get(Logger, params["apiUrl"])), key: "AppLogger");
   /// ```
-<<<<<<< HEAD
-  void mapWithParams<T>(ObjectFactoryWithParamsFn<T> factoryFn, {String key, bool overriding = false }) {
-=======
-  Injector mapWithParams<T>(ObjectFactoryWithParamsFn<T> factoryFn,
-      {String key}) {
->>>>>>> 1e9bb87
+  Injector mapWithParams<T extends Object>(ObjectFactoryWithParamsFn<T> factoryFn,
+      {String? key, bool overriding = false}) {
     final objectKey = _makeKey(T, key);
     if (_factories.containsKey(objectKey) && !overriding) {
       throw InjectorException("Mapping already present for type '$objectKey'");
@@ -168,7 +159,7 @@ class Injector {
   }
 
   /// Returns true if the given type has been mapped. Optionally give it a named key.
-  bool isMapped<T>({String key}) {
+  bool isMapped<T>({String? key}) {
     final objectKey = _makeKey(T, key);
     return _factories.containsKey(objectKey);
   }
@@ -177,7 +168,7 @@ class Injector {
   /// The remove operation is silent, means no exception is thrown if the type or key combination is not present.
   ///
   /// Returns the current injector instance.
-  Injector removeMapping<T>({String key}) {
+  Injector removeMapping<T>({String? key}) {
     final objectKey = _makeKey(T, key);
     if (_factories.containsKey(objectKey)) {
       _factories.remove(objectKey);
@@ -213,18 +204,18 @@ class Injector {
   /// final instance = injector.get<SomeType>(additionalParameters: { "id": "some-id" });
   /// print(instance.id) // prints 'some-id'
   /// ```
-  T get<T>({String key, Map<String, dynamic> additionalParameters}) {
+  T get<T extends Object>({String? key, Map<String, dynamic> additionalParameters = const <String, dynamic>{}}) {
     final objectKey = _makeKey(T, key);
     final objectFactory = _factories[objectKey];
     if (objectFactory == null) {
       throw InjectorException("Cannot find object factory for '$objectKey'");
     }
 
-    return objectFactory.get(this, additionalParameters);
+    return objectFactory.get(this, additionalParameters) as T;
   }
 
   /// Gets all the mapped instances of the given type and additional parameters
-  Iterable<T> getAll<T>({Map<String, dynamic> additionalParameters}) {
+  Iterable<T> getAll<T>({Map<String, dynamic> additionalParameters = const <String, dynamic>{}}) {
     final keyForType = _makeKeyPrefix(T);
     return _factories.entries //
         .where((entry) => entry.key.startsWith(keyForType)) //

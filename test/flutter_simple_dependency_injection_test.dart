@@ -45,16 +45,10 @@ class ObjectB {
 }
 
 void main() {
-  test('non-generic map test', () async {
+  test('a not found non-generic map test', () async {
     final injector = Injector();
     injector.map((i) => ObjectC('C', 'B'));
-    final instance = injector.get<ObjectC>();
-    expect(instance != null, true);
-  });
-
-  test('can get default injector instance', () async {
-    final injector = Injector();
-    expect(injector != null, true);
+    expect(()=>injector.get<ObjectB>(), throwsException);
   });
 
   test('can get named injector instance', () async {
@@ -81,7 +75,7 @@ void main() {
   });
 
   test('can override a mapped value, using overriding', () async {
-    final injector = Injector.getInjector();
+    final injector = Injector();
     injector.map<ObjectWithGenerics<String>>(
         (injector) => ObjectWithGenerics('Hello-one'));
 
@@ -105,9 +99,9 @@ void main() {
 
 
   test('can\'t override a mapped value, by default', () async {
-    final injector = Injector.getInjector();
+    final injector = Injector();
     injector.map<ObjectWithGenerics<String>>(
-        (injector) => ObjectWithGenerics('Hello-one'));
+        (injector) => ObjectWithGenerics('Hello-one'), overriding: true);
 
 
     expect(() => injector.map<ObjectWithGenerics<String>>(
@@ -117,7 +111,7 @@ void main() {
   test('can map generic types', () async {
     final injector = Injector();
     injector.map<ObjectWithGenerics<String>>(
-        (injector) => ObjectWithGenerics('Hello'));
+        (injector) => ObjectWithGenerics('Hello'), overriding: true);
     injector.map<ObjectWithGenerics<int>>((injector) => ObjectWithGenerics(10));
     injector
         .map<ObjectWithGenerics<bool>>((injector) => ObjectWithGenerics(true));
